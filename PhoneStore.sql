@@ -1,91 +1,137 @@
-CREATE DATABASE PhoneStore;
+CREATE DATABASE IF NOT EXISTS PhoneStore;
 USE PhoneStore;
--- Bảng thông tin người dùng
-CREATE TABLE Users ( 
-  userId INT AUTO_INCREMENT PRIMARY KEY,                          -- Mã người dùng
-  fullName VARCHAR(50) NOT NULL,                                  -- Họ và tên
-  email VARCHAR(100) NOT NULL UNIQUE,                             -- Email
-  password VARCHAR(50) NOT NULL,                                  -- Mật khẩu
-  address VARCHAR(50) NOT NULL,                                   -- Địa chỉ
-  role VARCHAR(50) NOT NULL DEFAULT 'User'                        -- Vai trò (User hoặc Admin)
-    CHECK (role IN ('Admin', 'User')),
-  createdAt DATETIME DEFAULT NOW()                                -- Ngày tạo tài khoản
+
+-- BẢNG NGƯỜI DÙNG (gồm cả User và Admin)
+CREATE TABLE Users (
+  userId INT AUTO_INCREMENT PRIMARY KEY,                         -- Mã người dùng
+  fullName VARCHAR(50) NOT NULL,                                 -- Họ và tên
+  email VARCHAR(100) NOT NULL UNIQUE,                            -- Email (duy nhất)
+  password VARCHAR(100) NOT NULL,                                -- Mật khẩu đã mã hóa
+  phone VARCHAR(20),                                             -- Số điện thoại
+  address VARCHAR(100) NOT NULL,                                 -- Địa chỉ
+  role ENUM('Admin', 'User') NOT NULL DEFAULT 'User',            -- Vai trò người dùng
+  isVerified BOOLEAN DEFAULT FALSE,                              -- Tài khoản đã xác minh hay chưa
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời gian tạo tài khoản
+  deletedAt DATETIME DEFAULT NULL                                -- Thời gian xóa mềm
 );
--- Bảng danh mục sản phẩm
-CREATE TABLE ProductCategories ( 
-  categoryId INT AUTO_INCREMENT PRIMARY KEY,                      -- Mã danh mục
-  categoryName VARCHAR(100) NOT NULL,                             -- Tên danh mục
-  categoryDescription TEXT                                        -- Mô tả danh mục
+
+-- BẢNG THƯƠNG HIỆU
+CREATE TABLE Brands (
+  brandId INT AUTO_INCREMENT PRIMARY KEY,                        -- Mã thương hiệu
+  brandName VARCHAR(100) NOT NULL                                -- Tên thương hiệu
 );
--- Bảng thông tin sản phẩm
-CREATE TABLE Products ( 
-  productId INT AUTO_INCREMENT PRIMARY KEY,                       -- Mã sản phẩm
-  productName VARCHAR(50) NOT NULL,                               -- Tên sản phẩm
-  productDescription TEXT,                                        -- Mô tả sản phẩm
-  brand VARCHAR(50) NOT NULL,                                     -- Thương hiệu
-  price DECIMAL(10,2) NOT NULL,                                   -- Giá gốc
-  discountPrice DECIMAL(10,2) NOT NULL,                           -- Giá sau giảm
-  image VARCHAR(255),                                             -- Ảnh sản phẩm
-  createdAt DATETIME DEFAULT NOW(),                               -- Ngày tạo
-  categoryId INT NOT NULL,                                        -- Mã danh mục
-  updatedAt DATETIME DEFAULT NOW(),                               -- Ngày cập nhật
-  FOREIGN KEY (categoryId) REFERENCES ProductCategories(categoryId) -- Ràng buộc danh mục
+
+-- BẢNG DANH MỤC SẢN PHẨM
+CREATE TABLE ProductCategories (
+  categoryId INT AUTO_INCREMENT PRIMARY KEY,                     -- Mã danh mục
+  categoryName VARCHAR(100) NOT NULL,                            -- Tên danh mục
+  categoryDescription TEXT                                       -- Mô tả danh mục
 );
--- Bảng đơn hàng
-CREATE TABLE Orders ( 
-  orderId INT AUTO_INCREMENT PRIMARY KEY,                         -- Mã đơn hàng
-  userId INT NOT NULL,                                            -- Mã người đặt
-  totalAmount DECIMAL(10,2) NOT NULL,                             -- Tổng tiền
-  orderStatus VARCHAR(50) DEFAULT 'Pending' CHECK (orderStatus IN ('Pending', 'Delivered', 'Completed', 'Canceled')), -- Trạng thái đơn hàng('Đang chờ', 'Đã giao', 'Đã hoàn thành', 'Đã hủy')
-  createdAt DATETIME DEFAULT NOW(),                               -- Ngày tạo đơn
-  FOREIGN KEY (userId) REFERENCES Users(userId)                   -- Khóa ngoại người dùng
+
+-- BẢNG SẢN PHẨM
+CREATE TABLE Products (
+  productId INT AUTO_INCREMENT PRIMARY KEY,                      -- Mã sản phẩm
+  productName VARCHAR(100) NOT NULL,                             -- Tên sản phẩm
+  productDescription TEXT,                                       -- Mô tả sản phẩm
+  brandId INT NOT NULL,                                          -- Mã thương hiệu
+  price DECIMAL(10,2) NOT NULL,                                  -- Giá gốc
+  discountPrice DECIMAL(10,2) NOT NULL,                          -- Giá sau giảm
+  image VARCHAR(255),                                            -- Đường dẫn ảnh
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Ngày tạo
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP 
+            ON UPDATE CURRENT_TIMESTAMP,                         -- Ngày cập nhật
+  deletedAt DATETIME DEFAULT NULL,                               -- Thời gian xóa mềm
+  categoryId INT NOT NULL,                                       -- Mã danh mục
+  FOREIGN KEY (brandId) REFERENCES Brands(brandId),              -- Khóa ngoại thương hiệu
+  FOREIGN KEY (categoryId) REFERENCES ProductCategories(categoryId) -- Khóa ngoại danh mục
 );
--- Bảng chi tiết đơn hàng
-CREATE TABLE OrderDetails ( 
-  orderDetailId INT AUTO_INCREMENT PRIMARY KEY,                   -- Mã chi tiết đơn
-  orderId INT NOT NULL,                                           -- Mã đơn hàng
-  productId INT NOT NULL,                                         -- Mã sản phẩm
-  quantity DECIMAL(10,2) NOT NULL,                                -- Số lượng mua
-  price DECIMAL(10,2) NOT NULL,                                   -- Giá tại thời điểm mua
-  FOREIGN KEY (orderId) REFERENCES Orders(orderId),               -- Khóa ngoại đơn hàng
-  FOREIGN KEY (productId) REFERENCES Products(productId)          -- Khóa ngoại sản phẩm
+
+-- BẢNG ĐƠN HÀNG
+CREATE TABLE Orders (
+  orderId INT AUTO_INCREMENT PRIMARY KEY,                        -- Mã đơn hàng
+  userId INT NOT NULL,                                           -- Mã người đặt
+  totalAmount DECIMAL(10,2) NOT NULL,                            -- Tổng tiền
+  orderStatus ENUM('Pending', 'Delivered', 'Completed', 'Canceled') DEFAULT 'Pending', -- Trạng thái
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Ngày đặt hàng
+  deletedAt DATETIME DEFAULT NULL,                               -- Thời gian xóa mềm
+  FOREIGN KEY (userId) REFERENCES Users(userId)                  -- Khóa ngoại người đặt
 );
--- Bảng đánh giá sản phẩm
-CREATE TABLE ProductReviews ( 
-  reviewId INT AUTO_INCREMENT PRIMARY KEY,                        -- Mã đánh giá
-  productId INT NOT NULL,                                         -- Mã sản phẩm
-  userId INT NOT NULL,                                            -- Mã người dùng đánh giá
-  rating INT CHECK (rating >= 1 AND rating <= 5),                 -- Điểm (1-5 sao)
-  comment TEXT,                                                   -- Bình luận
-  FOREIGN KEY (productId) REFERENCES Products(productId),         -- Khóa ngoại sản phẩm
-  FOREIGN KEY (userId) REFERENCES Users(userId)                   -- Khóa ngoại người dùng
+
+-- BẢNG CHI TIẾT ĐƠN HÀNG
+CREATE TABLE OrderDetails (
+  orderDetailId INT AUTO_INCREMENT PRIMARY KEY,                  -- Mã chi tiết
+  orderId INT NOT NULL,                                          -- Mã đơn hàng
+  productId INT NOT NULL,                                        -- Mã sản phẩm
+  quantity INT NOT NULL,                                         -- Số lượng mua
+  price DECIMAL(10,2) NOT NULL,                                  -- Giá tại thời điểm mua
+  FOREIGN KEY (orderId) REFERENCES Orders(orderId),              -- Khóa ngoại đơn hàng
+  FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
 );
--- Bảng khuyến mãi
-CREATE TABLE Promotions ( 
-  promotionId INT AUTO_INCREMENT PRIMARY KEY,                     -- Mã khuyến mãi
-  productId INT NOT NULL,                                         -- Mã sản phẩm áp dụng
-  discountPercent DECIMAL(5,2) CHECK (discountPercent BETWEEN 0 AND 100), -- Phần trăm giảm
-  startDate DATE,                                                 -- Ngày bắt đầu
-  endDate DATE,                                                   -- Ngày kết thúc
-  FOREIGN KEY (productId) REFERENCES Products(productId)          -- Khóa ngoại sản phẩm
+
+-- BẢNG ĐÁNH GIÁ SẢN PHẨM
+CREATE TABLE ProductReviews (
+  reviewId INT AUTO_INCREMENT PRIMARY KEY,                       -- Mã đánh giá
+  productId INT NOT NULL,                                        -- Mã sản phẩm
+  userId INT NOT NULL,                                           -- Mã người đánh giá
+  rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),            -- Điểm đánh giá (1-5 sao)
+  comment TEXT,                                                  -- Nội dung đánh giá
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Ngày đánh giá
+  FOREIGN KEY (productId) REFERENCES Products(productId),        -- Khóa ngoại sản phẩm
+  FOREIGN KEY (userId) REFERENCES Users(userId)                  -- Khóa ngoại người dùng
 );
--- Bảng thanh toán
-CREATE TABLE Payments ( 
-  paymentId INT AUTO_INCREMENT PRIMARY KEY,                       -- Mã thanh toán
-  orderId INT NOT NULL,                                           -- Mã đơn hàng
-  paymentMethod VARCHAR(50) NOT NULL                              -- Phương thức
-    CHECK (paymentMethod IN ('Bank Transfer', 'E-Wallet', 'Cash on Delivery')),
-  paymentStatus VARCHAR(50) DEFAULT 'Pending'                     -- Trạng thái thanh toán
-    CHECK (paymentStatus IN ('Pending', 'Completed', 'Failed')),
-  paymentDate DATE DEFAULT NOW(),                                 -- Ngày thanh toán
-  FOREIGN KEY (orderId) REFERENCES Orders(orderId)                -- Khóa ngoại đơn hàng
+
+-- BẢNG KHUYẾN MÃI
+CREATE TABLE Promotions (
+  promotionId INT AUTO_INCREMENT PRIMARY KEY,                    -- Mã khuyến mãi
+  productId INT NOT NULL,                                        -- Mã sản phẩm áp dụng
+  discountPercent DECIMAL(5,2) CHECK (discountPercent BETWEEN 0 AND 100), -- Phần trăm giảm giá
+  startDate DATE,                                                -- Ngày bắt đầu
+  endDate DATE,                                                  -- Ngày kết thúc
+  FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
 );
--- Bảng giỏ hàng tạm thời
-CREATE TABLE ShoppingCart ( 
-  cartId INT AUTO_INCREMENT PRIMARY KEY,                          -- Mã giỏ hàng
-  userId INT NOT NULL,                                            -- Mã người dùng
-  productId INT NOT NULL,                                         -- Mã sản phẩm
-  quantity INT NOT NULL,                                          -- Số lượng sản phẩm
-  FOREIGN KEY (userId) REFERENCES Users(userId),                  -- Khóa ngoại người dùng
-  FOREIGN KEY (productId) REFERENCES Products(productId)          -- Khóa ngoại sản phẩm
+
+-- BẢNG THANH TOÁN
+CREATE TABLE Payments (
+  paymentId INT AUTO_INCREMENT PRIMARY KEY,                      -- Mã thanh toán
+  orderId INT NOT NULL,                                          -- Mã đơn hàng
+  paymentMethod ENUM('Bank Transfer', 'E-Wallet', 'Cash on Delivery') NOT NULL, -- Phương thức
+  paymentStatus ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending', -- Trạng thái
+  paymentDate DATE DEFAULT CURRENT_DATE,                         -- Ngày thanh toán
+  FOREIGN KEY (orderId) REFERENCES Orders(orderId)               -- Khóa ngoại đơn hàng
+);
+
+-- BẢNG GIỎ HÀNG
+CREATE TABLE ShoppingCart (
+  cartId INT AUTO_INCREMENT PRIMARY KEY,                         -- Mã giỏ hàng
+  userId INT NOT NULL,                                           -- Mã người dùng
+  productId INT NOT NULL,                                        -- Mã sản phẩm
+  quantity INT NOT NULL,                                         -- Số lượng sản phẩm
+  FOREIGN KEY (userId) REFERENCES Users(userId),                 -- Khóa ngoại người dùng
+  FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
+);
+
+-- BẢNG RESET MẬT KHẨU
+CREATE TABLE PasswordResets (
+  id INT AUTO_INCREMENT PRIMARY KEY,                             -- Mã reset
+  email VARCHAR(100) NOT NULL,                                   -- Email người yêu cầu
+  token VARCHAR(100) NOT NULL,                                   -- Mã token reset
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP                   -- Thời gian tạo yêu cầu
+);
+
+-- BẢNG NHẬT KÝ HOẠT ĐỘNG
+CREATE TABLE ActivityLogs (
+  logId INT AUTO_INCREMENT PRIMARY KEY,                          -- Mã nhật ký
+  userId INT,                                                    -- Mã người thao tác
+  action TEXT,                                                   -- Hành động thực hiện
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời điểm thực hiện
+  FOREIGN KEY (userId) REFERENCES Users(userId)                  -- Khóa ngoại người dùng
+);
+
+-- BẢNG LỊCH SỬ TRẠNG THÁI ĐƠN HÀNG
+CREATE TABLE OrderLogs (
+  logId INT AUTO_INCREMENT PRIMARY KEY,                          -- Mã log trạng thái
+  orderId INT NOT NULL,                                          -- Mã đơn hàng
+  status ENUM('Pending', 'Delivered', 'Completed', 'Canceled'), -- Trạng thái ghi lại
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời điểm cập nhật
+  FOREIGN KEY (orderId) REFERENCES Orders(orderId)               -- Khóa ngoại đơn hàng
 );
