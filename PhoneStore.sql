@@ -115,8 +115,10 @@ CREATE TABLE PasswordResets (
   id INT AUTO_INCREMENT PRIMARY KEY,                             -- Mã reset
   email VARCHAR(100) NOT NULL,                                   -- Email người yêu cầu
   token VARCHAR(100) NOT NULL,                                   -- Mã token reset
-  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP                   -- Thời gian tạo yêu cầu
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời gian tạo yêu cầu
+  FOREIGN KEY (email) REFERENCES Users(email)                    -- Khóa ngoại liên kết với Users
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- BẢNG NHẬT KÝ HOẠT ĐỘNG
 CREATE TABLE ActivityLogs (
