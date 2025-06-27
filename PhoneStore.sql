@@ -13,20 +13,20 @@ CREATE TABLE Users (
   isVerified BOOLEAN DEFAULT FALSE,                              -- Tài khoản đã xác minh hay chưa
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời gian tạo tài khoản
   deletedAt DATETIME DEFAULT NULL                                -- Thời gian xóa mềm
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG THƯƠNG HIỆU
 CREATE TABLE Brands (
   brandId INT AUTO_INCREMENT PRIMARY KEY,                        -- Mã thương hiệu
   brandName VARCHAR(100) NOT NULL                                -- Tên thương hiệu
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG DANH MỤC SẢN PHẨM
 CREATE TABLE ProductCategories (
   categoryId INT AUTO_INCREMENT PRIMARY KEY,                     -- Mã danh mục
   categoryName VARCHAR(100) NOT NULL,                            -- Tên danh mục
   categoryDescription TEXT                                       -- Mô tả danh mục
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG SẢN PHẨM
 CREATE TABLE Products (
@@ -44,7 +44,7 @@ CREATE TABLE Products (
   categoryId INT NOT NULL,                                       -- Mã danh mục
   FOREIGN KEY (brandId) REFERENCES Brands(brandId),              -- Khóa ngoại thương hiệu
   FOREIGN KEY (categoryId) REFERENCES ProductCategories(categoryId) -- Khóa ngoại danh mục
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG ĐƠN HÀNG
 CREATE TABLE Orders (
@@ -55,7 +55,7 @@ CREATE TABLE Orders (
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Ngày đặt hàng
   deletedAt DATETIME DEFAULT NULL,                               -- Thời gian xóa mềm
   FOREIGN KEY (userId) REFERENCES Users(userId)                  -- Khóa ngoại người đặt
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG CHI TIẾT ĐƠN HÀNG
 CREATE TABLE OrderDetails (
@@ -66,7 +66,7 @@ CREATE TABLE OrderDetails (
   price DECIMAL(10,2) NOT NULL,                                  -- Giá tại thời điểm mua
   FOREIGN KEY (orderId) REFERENCES Orders(orderId),              -- Khóa ngoại đơn hàng
   FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG ĐÁNH GIÁ SẢN PHẨM
 CREATE TABLE ProductReviews (
@@ -78,7 +78,7 @@ CREATE TABLE ProductReviews (
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Ngày đánh giá
   FOREIGN KEY (productId) REFERENCES Products(productId),        -- Khóa ngoại sản phẩm
   FOREIGN KEY (userId) REFERENCES Users(userId)                  -- Khóa ngoại người dùng
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG KHUYẾN MÃI
 CREATE TABLE Promotions (
@@ -88,7 +88,7 @@ CREATE TABLE Promotions (
   startDate DATE,                                                -- Ngày bắt đầu
   endDate DATE,                                                  -- Ngày kết thúc
   FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG THANH TOÁN
 CREATE TABLE Payments (
@@ -98,7 +98,7 @@ CREATE TABLE Payments (
   paymentStatus ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending', -- Trạng thái
   paymentDate DATE DEFAULT CURRENT_DATE,                         -- Ngày thanh toán
   FOREIGN KEY (orderId) REFERENCES Orders(orderId)               -- Khóa ngoại đơn hàng
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG GIỎ HÀNG
 CREATE TABLE ShoppingCart (
@@ -108,7 +108,7 @@ CREATE TABLE ShoppingCart (
   quantity INT NOT NULL,                                         -- Số lượng sản phẩm
   FOREIGN KEY (userId) REFERENCES Users(userId),                 -- Khóa ngoại người dùng
   FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG RESET MẬT KHẨU
 CREATE TABLE PasswordResets (
@@ -116,7 +116,7 @@ CREATE TABLE PasswordResets (
   email VARCHAR(100) NOT NULL,                                   -- Email người yêu cầu
   token VARCHAR(100) NOT NULL,                                   -- Mã token reset
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP                   -- Thời gian tạo yêu cầu
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG NHẬT KÝ HOẠT ĐỘNG
 CREATE TABLE ActivityLogs (
@@ -125,7 +125,7 @@ CREATE TABLE ActivityLogs (
   action TEXT,                                                   -- Hành động thực hiện
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời điểm thực hiện
   FOREIGN KEY (userId) REFERENCES Users(userId)                  -- Khóa ngoại người dùng
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG LỊCH SỬ TRẠNG THÁI ĐƠN HÀNG
 CREATE TABLE OrderLogs (
@@ -134,4 +134,4 @@ CREATE TABLE OrderLogs (
   status ENUM('Pending', 'Delivered', 'Completed', 'Canceled'), -- Trạng thái ghi lại
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời điểm cập nhật
   FOREIGN KEY (orderId) REFERENCES Orders(orderId)               -- Khóa ngoại đơn hàng
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
