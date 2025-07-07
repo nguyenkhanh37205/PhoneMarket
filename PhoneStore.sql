@@ -137,3 +137,12 @@ CREATE TABLE OrderLogs (
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời điểm cập nhật
   FOREIGN KEY (orderId) REFERENCES Orders(orderId)               -- Khóa ngoại đơn hàng
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE users 
+ADD image VARCHAR(255)
+AFTER phone
+
+ALTER TABLE products 
+ADD quantity int(11)
+AFTER image
+ 
