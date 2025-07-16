@@ -146,4 +146,7 @@ ALTER TABLE products
 ADD quantity int(11)
 AFTER image
 
+ALTER TABLE brands
+ADD brandDescription text
+
  
