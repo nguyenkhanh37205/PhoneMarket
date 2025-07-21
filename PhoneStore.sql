@@ -61,11 +61,11 @@ CREATE TABLE Orders (
 CREATE TABLE OrderDetails (
   orderDetailId INT AUTO_INCREMENT PRIMARY KEY,                  -- Mã chi tiết
   orderId INT NOT NULL,                                          -- Mã đơn hàng
-  productId INT NOT NULL,                                        -- Mã sản phẩm
+  variantId INT, NOT NULL,                                       -- Mã biến thể sản phẩm
   quantity INT NOT NULL,                                         -- Số lượng mua
   price DECIMAL(10,2) NOT NULL,                                  -- Giá tại thời điểm mua
   FOREIGN KEY (orderId) REFERENCES Orders(orderId),              -- Khóa ngoại đơn hàng
-  FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
+  FOREIGN KEY (variantId) REFERENCES productVariants(variantId)  -- Khóa ngoại biến thể sản phẩm
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- BẢNG ĐÁNH GIÁ SẢN PHẨM
@@ -110,16 +110,6 @@ CREATE TABLE ShoppingCart (
   FOREIGN KEY (productId) REFERENCES Products(productId)         -- Khóa ngoại sản phẩm
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- BẢNG RESET MẬT KHẨU
-CREATE TABLE PasswordResets (
-  id INT AUTO_INCREMENT PRIMARY KEY,                             -- Mã reset
-  email VARCHAR(100) NOT NULL,                                   -- Email người yêu cầu
-  token VARCHAR(100) NOT NULL,                                   -- Mã token reset
-  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời gian tạo yêu cầu
-  FOREIGN KEY (email) REFERENCES Users(email)                    -- Khóa ngoại liên kết với Users
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
 -- BẢNG NHẬT KÝ HOẠT ĐỘNG
 CREATE TABLE ActivityLogs (
   logId INT AUTO_INCREMENT PRIMARY KEY,                          -- Mã nhật ký
@@ -137,6 +127,26 @@ CREATE TABLE OrderLogs (
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,                  -- Thời điểm cập nhật
   FOREIGN KEY (orderId) REFERENCES Orders(orderId)               -- Khóa ngoại đơn hàng
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- BẢNG MÀU SẮC SẢN PHẨM
+CREATE TABLE productColors (
+  colorId INT AUTO_INCREMENT PRIMARY KEY,  -- Mã màu (tự tăng, khóa chính)
+  colorName VARCHAR(50) NOT NULL           -- Tên màu (không được để trống)
+);
+
+-- BẢNG BIẾN THỂ SẢN PHẨM
+CREATE TABLE productVariants (
+  variantId INT AUTO_INCREMENT PRIMARY KEY,       -- Mã biến thể (khóa chính, tự tăng)
+  productId INT,                                  -- Mã sản phẩm (khóa ngoại)
+  colorId INT,                                    -- Mã màu (khóa ngoại)
+  size VARCHAR(50),                               -- Kích thước sản phẩm
+  price DECIMAL(10,2) NOT NULL,                   -- Giá sản phẩm (không được để trống)
+  stock INT DEFAULT 0,                            -- Số lượng tồn kho (mặc định là 0)
+  image VARCHAR(255),                             -- Đường dẫn hình ảnh sản phẩm
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,   -- Ngày tạo biến thể (mặc định là thời điểm hiện tại)
+  FOREIGN KEY (productId) REFERENCES Products(productId),      -- Liên kết với bảng Products
+  FOREIGN KEY (colorId) REFERENCES productColors(colorId)      -- Liên kết với bảng productColors
+); 
 
 ALTER TABLE users 
 ADD image VARCHAR(255)
