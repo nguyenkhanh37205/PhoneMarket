@@ -61,7 +61,7 @@ CREATE TABLE Orders (
 CREATE TABLE OrderDetails (
   orderDetailId INT AUTO_INCREMENT PRIMARY KEY,                  -- Mã chi tiết
   orderId INT NOT NULL,                                          -- Mã đơn hàng
-  variantId INT, NOT NULL,                                       -- Mã biến thể sản phẩm
+  variantId INT NOT NULL,                                       -- Mã biến thể sản phẩm
   quantity INT NOT NULL,                                         -- Số lượng mua
   price DECIMAL(10,2) NOT NULL,                                  -- Giá tại thời điểm mua
   FOREIGN KEY (orderId) REFERENCES Orders(orderId),              -- Khóa ngoại đơn hàng
@@ -150,11 +150,11 @@ CREATE TABLE productVariants (
 
 ALTER TABLE users 
 ADD image VARCHAR(255)
-AFTER phone
+AFTER phone;
 
 ALTER TABLE products 
 ADD quantity int(11)
-AFTER image
+AFTER image;
 
 ALTER TABLE brands
 ADD brandDescription text
